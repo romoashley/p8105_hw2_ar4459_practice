@@ -152,3 +152,19 @@ merged_df =
             gwyn_wheel_df, 
             by = "dumpster")
 ```
+
+## Problem 3
+
+``` r
+mci_df = 
+  read_csv("hw2_data/MCI_baseline.csv")
+```
+
+    ## New names:
+    ## Rows: 484 Columns: 6
+    ## ── Column specification
+    ## ──────────────────────────────────────────────────────── Delimiter: "," chr
+    ## (6): ...1, Age at the study baseline, 1 = Male, 0 = Female, Years of edu...
+    ## ℹ Use `spec()` to retrieve the full column specification for this data. ℹ
+    ## Specify the column types or set `show_col_types = FALSE` to quiet this message.
+    ## • `` -> `...1`

@@ -93,6 +93,12 @@ merged_df =
 
 ```
 
+## Problem 3
+
+```{r}
+mci_df = 
+  read_csv("hw2_data/MCI_baseline.csv")
+```
 
 
 
