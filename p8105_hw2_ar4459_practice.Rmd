@@ -85,6 +85,12 @@ gwyn_wheel_df =
     )
 
 
+merged_df =
+  full_join(mr_wheel_df, 
+            prof_wheel_df,
+            gwyn_wheel_df, 
+            by = "dumpster")
+
 ```
 
 

@@ -144,4 +144,11 @@ gwyn_wheel_df =
   janitor::clean_names()|> 
   mutate(homes_powered = weight_tons*500/30
     )
+
+
+merged_df =
+  full_join(mr_wheel_df, 
+            prof_wheel_df,
+            gwyn_wheel_df, 
+            by = "dumpster")
 ```
