@@ -1,0 +1,97 @@
+---
+title: "Homework 2 Practice"
+author: "ASHLEY ROMO"
+date: "2023-09-29"
+output: github_document
+---
+
+```{r}
+library(tidyverse)
+library(readxl)
+```
+
+## Problem 1
+```{r clean_538_pols}
+month_df = 
+  tibble(
+    month_num = 1:12,
+    month_abb = month.abb,
+    month = month.name
+  )
+
+pols = 
+  read_csv("hw2_data/pols-month.csv") |>
+  separate(mon, into = c("year", "month_num", "day"), convert = TRUE) |>
+  mutate(
+    president = recode(prez_gop, "0" = "dem", "1" = "gop", "2" = "gop")) |>
+  left_join(x = _, y = month_df) |> 
+  select(year, month, everything(), -day, -starts_with("prez")) 
+```
+
+
+
+```{r clean_538_snp}
+snp = 
+  read_csv("hw2_data/snp.csv") |>
+  separate(date, into = c("month", "day", "year"), convert = TRUE) |>
+  arrange(year, month) |>
+  mutate(month = month.name[month]) |>
+  select(year, month, close) 
+```
+
+Finally, we tidy the `unemployment` data so that it can be merged with the `pols` and `snp` datasets.
+
+```{r clean_538_unemp}
+unemployment = 
+  read_csv("hw2_data/unemployment.csv") |>
+  rename(year = Year) |>
+  pivot_longer(
+    Jan:Dec, 
+    names_to = "month_abb",
+    values_to = "unemployment"
+  ) |> 
+  left_join(x = _, y = month_df) |> 
+  select(year, month, unemployment)
+```
+
+Now we merge the three datasets!
+
+```{r merge_538}
+data_538 = 
+  left_join(pols, snp) |>
+  left_join(x = _, y = unemployment)
+
+str(data_538)
+```
+
+# Problem 2
+```{r}
+mr_wheel_df =
+  read_xlsx("hw2_data/202207 Trash Wheel Collection Data.xlsx",1, range = "A2:N549") |> 
+  janitor::clean_names()|> 
+  mutate(homes_powered = weight_tons*500/30
+    )
+
+prof_wheel_df =
+  read_xlsx("hw2_data/202207 Trash Wheel Collection Data.xlsx",2 , range = "A2:M96") |> 
+  janitor::clean_names()|> 
+  mutate(homes_powered = weight_tons*500/30
+    )
+
+gwyn_wheel_df =
+  read_xlsx("hw2_data/202207 Trash Wheel Collection Data.xlsx",4 , range = "A2:K108") |> 
+  janitor::clean_names()|> 
+  mutate(homes_powered = weight_tons*500/30
+    )
+
+
+```
+
+
+
+
+
+
+
+
+
