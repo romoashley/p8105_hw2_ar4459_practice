@@ -157,14 +157,71 @@ merged_df =
 
 ``` r
 mci_df = 
-  read_csv("hw2_data/MCI_baseline.csv")
+  read_csv("hw2_data/MCI_baseline.csv", skip = 1) |> 
+  janitor::clean_names() |>
+  mutate(
+    sex = case_match(
+      sex, 
+      1 ~ "male",
+      0 ~"female"
+    ),
+    apoe4 = case_match(
+      apoe4, 
+      1 ~ "carrier",
+      0 ~ "non-carrier"
+    ), 
+  ) |> 
+   select(id, baseline_age = current_age, onset_age = age_at_onset, everything())
 ```
 
-    ## New names:
-    ## Rows: 484 Columns: 6
-    ## ── Column specification
-    ## ──────────────────────────────────────────────────────── Delimiter: "," chr
-    ## (6): ...1, Age at the study baseline, 1 = Male, 0 = Female, Years of edu...
-    ## ℹ Use `spec()` to retrieve the full column specification for this data. ℹ
-    ## Specify the column types or set `show_col_types = FALSE` to quiet this message.
-    ## • `` -> `...1`
+    ## Rows: 483 Columns: 6
+    ## ── Column specification ────────────────────────────────────────────────────────
+    ## Delimiter: ","
+    ## chr (1): Age at onset
+    ## dbl (5): ID, Current Age, Sex, Education, apoe4
+    ## 
+    ## ℹ Use `spec()` to retrieve the full column specification for this data.
+    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+
+An important step in the import process include skipping the first row
+in the csv file because it is a legend about the dataset and not data.
+Relevant features of the dataset include the age at baseline, age at
+onset, and the whether the participant is a carrier or non-carrier of
+the apoe4 variant. These are relevant because they provide information
+to investigate whether participants with the apoe4 variant develop MCI
+at a younger age.
+
+``` r
+# number of participants at baseline 
+nrow(mci_df)
+```
+
+    ## [1] 483
+
+``` r
+# participants who developed MCI
+developed_df = 
+  filter(mci_df, onset_age != ".")
+
+
+# average age at baseline
+mean(pull(mci_df, baseline_age))
+```
+
+    ## [1] 65.04679
+
+``` r
+# proportion of women with apoe4 variant 
+female_car_df = 
+  select(mci_df, sex, apoe4) |> 
+  filter(sex == "female", apoe4 == "carrier")
+```
+
+There were a total of 483 participants recruited at baseline.
+
+Of the total participants at baseline, 0.2008282 was the proportion of
+participants who developed MCI.
+
+The average age at baseline is 65.0467909.
+
+The proportion of women in the study who are carriers is 0.1304348.
