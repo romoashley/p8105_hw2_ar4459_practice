@@ -70,28 +70,42 @@ mr_wheel_df =
   read_xlsx("hw2_data/202207 Trash Wheel Collection Data.xlsx",1, range = "A2:N549") |> 
   janitor::clean_names()|> 
   mutate(homes_powered = weight_tons*500/30
-    )
+    ) |> 
+  select(dumpster, month, year, date, weight = weight_tons, volume = volume_cubic_yards, everything())
 
 prof_wheel_df =
   read_xlsx("hw2_data/202207 Trash Wheel Collection Data.xlsx",2 , range = "A2:M96") |> 
   janitor::clean_names()|> 
   mutate(homes_powered = weight_tons*500/30
-    )
+    ) |> 
+  select(dumpster, month, year, date, weight = weight_tons, volume = volume_cubic_yards, everything())
 
 gwyn_wheel_df =
   read_xlsx("hw2_data/202207 Trash Wheel Collection Data.xlsx",4 , range = "A2:K108") |> 
   janitor::clean_names()|> 
   mutate(homes_powered = weight_tons*500/30
-    )
+    ) |> 
+  select(dumpster, month, year, date, weight = weight_tons, volume = volume_cubic_yards, everything())
 
 
-merged_df =
+mr_prof_df =
   full_join(mr_wheel_df, 
             prof_wheel_df,
-            gwyn_wheel_df, 
+            by = "dumpster")
+full_merge_df =
+  full_join(mr_prof_df, 
+            gwyn_wheel_df,
             by = "dumpster")
 
 ```
+
+The total number of observations in the resulting dataset is`r nrow(full_merge_df) `. Key variables include the weight in tons in Mr Trash Wheel, Professor Trash Wheel and Gwynnda. 
+
+The total weight collected by Professor Trash Wheel is `r sum(pull(full_merge_df, weight.x))` tons.
+
+The total number of cigarette butts collected by Gwynnda in July of 2021 is `r sum(select(full_merge_df, month, year, cigarette_butts)|> filter(month == "July", year == "2021") |> select(cigarette_butts))`.
+
+
 
 ## Problem 3
 
@@ -143,5 +157,26 @@ The average age at baseline is `r mean(pull(mci_df, baseline_age))`.
 
 The proportion of women in the study who are carriers is `r nrow(female_car_df)/nrow(mci_df)`.
 
+```{r}
+amyloid_df = 
+  read_csv("hw2_data/mci_amyloid.csv", skip = 1) |> 
+  janitor::clean_names() |> 
+  select(id = study_id, t0 = baseline, t1 = time_2, t2 = time_4, t3 = time_6, t4 = time_8) 
+```
 
+The steps of the import included loading the dataset using the read_csv function and the relative pathname. I also used skip = 1 because the first row in the csv file was a key or legend that described the time points in the dataset. Since this row was not data, I did not include it in my dataframe.
 
+```{r}
+included_one = anti_join(mci_df, amyloid_df, by = "id")
+nrow(included_one)
+```
+
+There are a total of `r nrow(included_one) ` participants who appear in only the baseline or amyloid datasets. This includes participants with the following id: 14, 49, 92, 179, 268, 304, 389, 412.
+
+```{r}
+included_both = inner_join(mci_df, amyloid_df, by = "id")
+nrow(included_both)
+
+```
+
+The total number of participants included in both datasets is `r nrow(included_both) `. The mean age at baseline is `r mean(pull(included_both, baseline_age))`.

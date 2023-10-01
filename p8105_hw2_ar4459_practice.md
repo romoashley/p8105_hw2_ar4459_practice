@@ -131,27 +131,42 @@ mr_wheel_df =
   read_xlsx("hw2_data/202207 Trash Wheel Collection Data.xlsx",1, range = "A2:N549") |> 
   janitor::clean_names()|> 
   mutate(homes_powered = weight_tons*500/30
-    )
+    ) |> 
+  select(dumpster, month, year, date, weight = weight_tons, volume = volume_cubic_yards, everything())
 
 prof_wheel_df =
   read_xlsx("hw2_data/202207 Trash Wheel Collection Data.xlsx",2 , range = "A2:M96") |> 
   janitor::clean_names()|> 
   mutate(homes_powered = weight_tons*500/30
-    )
+    ) |> 
+  select(dumpster, month, year, date, weight = weight_tons, volume = volume_cubic_yards, everything())
 
 gwyn_wheel_df =
   read_xlsx("hw2_data/202207 Trash Wheel Collection Data.xlsx",4 , range = "A2:K108") |> 
   janitor::clean_names()|> 
   mutate(homes_powered = weight_tons*500/30
-    )
+    ) |> 
+  select(dumpster, month, year, date, weight = weight_tons, volume = volume_cubic_yards, everything())
 
 
-merged_df =
+mr_prof_df =
   full_join(mr_wheel_df, 
             prof_wheel_df,
-            gwyn_wheel_df, 
+            by = "dumpster")
+full_merge_df =
+  full_join(mr_prof_df, 
+            gwyn_wheel_df,
             by = "dumpster")
 ```
+
+The total number of observations in the resulting dataset is548. Key
+variables include the weight in tons in Mr Trash Wheel, Professor Trash
+Wheel and Gwynnda.
+
+The total weight collected by Professor Trash Wheel is 1751.09 tons.
+
+The total number of cigarette butts collected by Gwynnda in July of 2021
+is 1.63^{4}.
 
 ## Problem 3
 
@@ -225,3 +240,46 @@ participants who developed MCI.
 The average age at baseline is 65.0467909.
 
 The proportion of women in the study who are carriers is 0.1304348.
+
+``` r
+amyloid_df = 
+  read_csv("hw2_data/mci_amyloid.csv", skip = 1) |> 
+  janitor::clean_names() |> 
+  select(id = study_id, t0 = baseline, t1 = time_2, t2 = time_4, t3 = time_6, t4 = time_8) 
+```
+
+    ## Rows: 487 Columns: 6
+    ## ── Column specification ────────────────────────────────────────────────────────
+    ## Delimiter: ","
+    ## chr (5): Baseline, Time 2, Time 4, Time 6, Time 8
+    ## dbl (1): Study ID
+    ## 
+    ## ℹ Use `spec()` to retrieve the full column specification for this data.
+    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+
+The steps of the import included loading the dataset using the read_csv
+function and the relative pathname. I also used skip = 1 because the
+first row in the csv file was a key or legend that described the time
+points in the dataset. Since this row was not data, I did not include it
+in my dataframe.
+
+``` r
+included_one = anti_join(mci_df, amyloid_df, by = "id")
+nrow(included_one)
+```
+
+    ## [1] 8
+
+There are a total of 8 participants who appear in only the baseline or
+amyloid datasets. This includes participants with the following id: 14,
+49, 92, 179, 268, 304, 389, 412.
+
+``` r
+included_both = inner_join(mci_df, amyloid_df, by = "id")
+nrow(included_both)
+```
+
+    ## [1] 475
+
+The total number of participants included in both datasets is 475. The
+mean age at baseline is 65.0658947.
