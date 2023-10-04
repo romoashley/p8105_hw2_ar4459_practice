@@ -132,7 +132,8 @@ mr_wheel_df =
   janitor::clean_names()|> 
   drop_na(dumpster) |> 
   mutate(homes_powered = (weight_tons)*500/30,
-         mr_trash = "Mr. Trash Wheel"
+         mr_trash = "Mr. Trash Wheel",
+         year = as.numeric(year)
     ) |> 
   select(dumpster, month, year, date, weight = weight_tons, volume = volume_cubic_yards, everything()) 
 
@@ -144,7 +145,8 @@ prof_wheel_df =
   mutate(homes_powered = (weight_tons)*500/30,
          prof_trash = "Professor Trash Wheel"
     ) |> 
-  select(dumpster, month, year, date, weight = weight_tons, volume = volume_cubic_yards, everything())
+  select(dumpster, month, year, date, weight = weight_tons, volume = volume_cubic_yards, everything()) 
+
 
 gwyn_wheel_df =
   read_xlsx("data/202309 Trash Wheel Collection Data.xlsx",4 , range = "A2:L159") |> 
@@ -155,25 +157,18 @@ gwyn_wheel_df =
   drop_na(dumpster) |> 
   select(dumpster, month, year, date, weight = weight_tons, volume = volume_cubic_yards, everything())
 
-
-mr_prof_df =
-  full_join(mr_wheel_df, 
-            prof_wheel_df,
-            by = "dumpster")
 full_merge_df =
-  full_join(mr_prof_df, 
-            gwyn_wheel_df,
-            by = "dumpster")
+  bind_rows(mr_wheel_df, prof_wheel_df, gwyn_wheel_df, .id = "Dumpster")
 ```
 
-The total number of observations in the resulting dataset is 585. Key
+The total number of observations in the resulting dataset is 845. Key
 variables include the weight in tons in Mr Trash Wheel, Professor Trash
 Wheel and Gwynnda.
 
 The total weight collected by Professor Trash Wheel is 216.26 tons.
 
 The total number of cigarette butts collected by Gwynnda in July of 2021
-is 1.63^{4}.
+is 4.58^{4}.
 
 ## Problem 3
 
@@ -255,7 +250,11 @@ The proportion of women in the study who are carriers is 0.3225806.
 amyloid_df = 
   read_csv("data/mci_amyloid.csv", skip = 1) |> 
   janitor::clean_names() |> 
-  select(id = study_id, t0 = baseline, t1 = time_2, t2 = time_4, t3 = time_6, t4 = time_8) 
+  select(id = study_id, t0 = baseline, t1 = time_2, t2 = time_4, t3 = time_6, t4 = time_8) |> 
+  pivot_longer(
+    t0:t4,
+    names_to = "time_points",
+    values_to = "ratio")
 ```
 
     ## Rows: 487 Columns: 6
@@ -276,24 +275,32 @@ the remaining time points so it followed an increase time for each
 column.
 
 ``` r
-included_one = anti_join(mci_df, amyloid_df, by = "id")
-nrow(included_one)
+mci_only = anti_join(mci_df, amyloid_df, by = "id")
+nrow(mci_only)
 ```
 
     ## [1] 3
 
-There are a total of 3 participants who appear in only the baseline or
-amyloid datasets. This includes participants with the following id: 14,
-4, 268.
+``` r
+amyloid_only = anti_join(amyloid_df, mci_df, by = "id")
+nrow(amyloid_only)
+```
+
+    ## [1] 1985
+
+There are a total of 3 participants who appear in only the baseline.
+This includes participants with the following id: 14, 4, 268.
+
+There are a total of 1985 participants who appear in only the amyloid.
 
 ``` r
 included_both = inner_join(mci_df, amyloid_df, by = "id")
 nrow(included_both)
 ```
 
-    ## [1] 90
+    ## [1] 450
 
-The total number of participants included in both datasets is 90. The
+The total number of participants included in both datasets is 450. The
 mean age at baseline is 65.6766667.
 
 ``` r
